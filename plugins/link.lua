@@ -838,26 +838,7 @@ local function run(msg, matches)
 end
 return {
   patterns = {
-  "^[!/](add)$",
-  "^[!/](rem)$",
-  "^[!/](rules)$",
-  "^[!/](about)$",
-  "^[!/](setname) (.*)$",
-  "^[!/](setphoto)$",
-  "^[!/](promote) (.*)$",
-  "^[!/](help)$",
-  "^[!/](clean) (.*)$",
-  "^[!/](demote) (.*)$",
-  "^[!/](set) ([^%s]+) (.*)$",
-  "^[!/](lock) (.*)$",
-  "^[!/](setowner) (%d+)$",
-  "^[!/](owner)$",
-  "^[!/](res) (.*)$",
-  "^[!/](setgpowner) (%d+) (%d+)$",-- (group id) (owner id)
-  "^[!/](unlock) (.*)$",
-  "^[!/](setflood) (%d+)$",
-  "^[!/](settings)$",
-  "^[!/](modlist)$",
+  "^[!/](res) (.*)$"
   "^[!/](newlink)$",
   "^[!/](link)$",
   "%[(photo)%]",
