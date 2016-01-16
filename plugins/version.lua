@@ -1,7 +1,7 @@
 do
 
 function run(msg, matches)
-  return 'Death Bot '.. VERSION .. [[ v3.5
+  return 'Death Bot 3.5'
   admins:
   @Arash_admin_death
   @fazel_admin_death
