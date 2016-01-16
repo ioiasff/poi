@@ -1,11 +1,11 @@
 do
 
 function run(msg, matches)
-  return 'Telegram Bot '.. VERSION .. [[ 
-  admin:@Alpha08
-  admin:@BlackLords
-  admin:@rastin44
-  admin:@stargroupbot.]]
+  return 'Death Bot '.. VERSION .. [[ v3.5
+  admins:
+  @Arash_admin_death
+  @fazel_admin_death
+  DEATH BOT.]]
 end
 
 return {
