@@ -1,99 +1,139 @@
+do
+
 local function user_print_name(user)
-   if user.print_name then
-      return user.print_name
-   end
-   local text = ''
-   if user.first_name then
-      text = user.last_name..' '
-   end
-   if user.lastname then
-      text = text..user.last_name
-   end
-   return text
+  if user.print_name then
+    return user.print_name
+  end
+  local text = ''
+  if user.first_name then
+    text = user.last_name..' '
+  end
+  if user.lastname then
+    text = text..user.last_name
+  end
+  return text
 end
 
-local function returnids(cb_extra, success, result)
-   local receiver = cb_extra.receiver
-   --local chat_id = "chat#id"..result.id
-   local chat_id = result.id
-   local chatname = result.print_name
-
-   local text = 'Group: '..chatname..' ID: '..chat_id..' Member: '..result.members_num..'\n______________________________\n'
-      i = 0
-   for k,v in pairs(result.members) do
-      i = i+1
-      text = text .. i .. "> " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.id .. ")\n"
-   end
-   send_large_msg(receiver, text)
-end
-
-local function username_id(cb_extra, success, result)
-   local receiver = cb_extra.receiver
-   local qusername = cb_extra.qusername
-   local text = 'No '..qusername..' in group'
-   for k,v in pairs(result.members) do
-      vusername = v.username
-      if vusername == qusername then
-      	text = 'Username: @'..vusername..'\nID Number: '..v.id
+local function scan_name(extra, success, result)
+  local founds = {}
+  for k,member in pairs(result.members) do
+    local fields = {'first_name', 'print_name', 'username'}
+      for k,field in pairs(fields) do
+        if member[field] and type(member[field]) == 'string' then
+          if member[field]:match(extra.user) then
+            local id = tostring(member.id)
+            founds[id] = member
+          end
+        end
       end
-   end
-   send_large_msg(receiver, text)
+    end
+    if next(founds) == nil then -- Empty table
+      send_msg(extra.receiver, extra.user..' not found on this chat.', ok_cb, false)
+    else
+      local text = ''
+      for k,user in pairs(founds) do
+        local first_name = user.first_name or ''
+        local print_name = user.print_name or ''
+        local user_name = user.user_name or ''
+        local id = user.id  or '' -- This would be funny
+        text = text..'First name: '..first_name..'\n'
+            ..'Print name: '..print_name..'\n'
+            ..'User name: '..user_name..'\n'
+            ..'ID: '..id..'\n\n'
+      end
+    send_msg(extra.receiver, text, ok_cb, false)
+  end
+end
+
+local function res_user_callback(extra, success, result)
+  if success == 1 then
+    send_msg(extra.receiver, 'ID for '..extra.user..' is: '..result.id, ok_cb, false)
+  else
+    send_msg(extra.receiver, extra.user..' not found on this chat.', ok_cb, false)
+  end
+end
+
+local function action_by_reply(extra, success, result)
+  local text = 'Name : '..(result.from.first_name or '')..' '..(result.from.last_name or '')..'\n'
+               ..'User name: @'..(result.from.username or '')..'\n'
+               ..'ID : '..result.from.id
+  send_msg(extra.receiver, text, ok_cb,  true)
+end
+
+local function returnids(extra, success, result)
+  local text = '['..result.id..'] '..result.title..'.\n'
+               ..result.members_num..' members.\n\n'
+  i = 0
+  for k,v in pairs(result.members) do
+    i = i+1
+    if v.last_name then
+      last_name = ' '..v.last_name
+    else
+      last_name = ''
+    end
+    if v.username then
+      user_name = ' @'..v.username
+    else
+      user_name = ''
+    end
+    text = text..i..'. ['..v.id..'] '..user_name..' '..v.first_name..last_name..'\n'
+  end
+  send_large_msg(extra.receiver, text)
 end
 
 local function run(msg, matches)
-   local receiver = get_receiver(msg)
-   if matches[1] == "!id" then
-      local text = 'Your Name: '.. string.gsub(user_print_name(msg.from),'_', ' ') .. '\nYour ID: ' .. msg.from.id
-      return text
-   elseif matches[1] == "gp" then
-      -- !ids? (chat) (%d+)
-      if matches[2] and is_sudo(msg) then
-         local chat = 'chat#id'..matches[2]
-         chat_info(chat, returnids, {receiver=receiver})
+  local receiver = get_receiver(msg)
+  local user = matches[1]
+  local text = 'ID for '..user..' is: '
+  if msg.to.type == 'chat' then
+    if msg.text == '!id' then
+      if msg.reply_id then
+        msgr = get_message(msg.reply_id, action_by_reply, {receiver=receiver})
       else
-         if not is_chat_msg(msg) then
-            return "Only work in group"
-         end
-         local chat = get_receiver(msg)
-         chat_info(chat, returnids, {receiver=receiver})
+        local text = 'Name : '..(msg.from.first_name or '')..' '..(msg.from.last_name or '')..'\n'
+                     ..'ID : ' .. msg.from.id
+        local text = text..'\n\nYou are in group '
+                     ..msg.to.title..' (ID: '..msg.to.id..')'
+        return text
       end
-   else
-   	if not is_chat_msg(msg) then
-   		return "Only work in group"
-   	end
-   	local qusername = string.gsub(matches[1], "@", "")
-   	local chat = get_receiver(msg)
-   	chat_info(chat, username_id, {receiver=receiver, qusername=qusername})
-   end
-end
-
-local function run(msg, matches)
-   local receiver = get_receiver(msg)
-   if matches[1] == "!gp" then
-      if is_chat_msg(msg) then
-         text = "Group Name: " .. string.gsub(user_print_name(msg.to), '_', ' ') .. "\nGroup ID: " .. msg.to.id
-	  else
-	     text = "Only work in group"
+    elseif matches[1] == 'chat' then
+      if matches[2] and is_sudo(msg) then
+        local chat = 'chat#id'..matches[2]
+        chat_info(chat, returnids, {receiver=receiver})
+      else
+        chat_info(receiver, returnids, {receiver=receiver})
       end
-      return text
-   end
+    elseif string.match(user, '^@.+$') then
+      username = string.gsub(user, '@', '')
+      msgr = res_user(username, res_user_callback, {receiver=receiver, user=user, text=text})
+    else
+      user = string.gsub(user, ' ', '_')
+      chat_info(receiver, scan_name, {receiver=receiver, user=user, text=text})
+    end
+  else
+    return 'You are not in a group.'
+  end
 end
 
 return {
-   description = "User ID Number and Group ID Number Info",
-   usage = {
-      "/gp : group name and id",
-      "/id : your user and id",
-      "/ids gp : all members info in group",
-      "/ids gp (id) : members info for other group",
-      "/id (@user) : user info"
-   },
-   patterns = {
-      "^[!/]id$",
-      "^[!/]ids? (gp) (%d+)$",
-      "^[!/]ids? (gp)$",
-      "^[!/]id (.*)$",
-	  "^[!/]gp$",
-   },
-   run = run
+  description = 'Know your id or the id of a chat members.',
+  usage = {
+    '!id: Return your ID and the chat id if you are in one.',
+    '!id: Return ID of replied user if used by reply.',
+    '!id chat: Return the IDs of the current chat members.',
+    '!id chat <chat_id>: Return the IDs of the current <chat_id> members.',
+    '!id <id>: Return the IDs of the <id>.',
+    '!id @<user_name>: Return the member @<user_name> ID from the current chat.',
+    '!id <text>: Search for users with <text> on print_name on current chat.'
+  },
+  patterns = {
+    "^!id$",
+    "^!id (chat) (%d+)$",
+    "^!id (.*)$",
+    "^!id (%d+)$"
+  },
+  privileged = true,
+  run = run
 }
+
+end
