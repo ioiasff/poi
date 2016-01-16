@@ -56,7 +56,7 @@ return {
 		"^[Hh]i$",
 		"^[Hh]ello$",
 		"^[Aa]rash$",
-		"^Arash$",
+		"^ارش$",
 		"^[Dd]eath$",
 		"^[Dd]eath$",
 		"^[Bb]ye$",
