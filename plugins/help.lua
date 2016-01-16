@@ -87,9 +87,9 @@ local function plugin_help(name,number,requester)
               text = text..usage..'\n'
           end
       end
-      text = text..'======================\n'
+      text = text..'______________________________\n'
     elseif has_usage_data(plugin) then -- Is not empty
-      text = text..plugin.usage..'\n======================\n'
+      text = text..plugin.usage..'\n______________________________\n'
     end
     return text
 end
@@ -97,20 +97,19 @@ end
  
 -- !help command
 local function telegram_help()
-  local i = 0
-  local text = "Plugins list:\n\n"
+  local text = "Death Tools List:\n______________________________\n"
   -- Plugins names
   for name in pairsByKeys(plugins) do
     if plugins[name].hidden then
       name = nil
     else
-    i = i + 1
-    text = text..i..'. '..name..'\n'
+    text = text..'> '..name..'\n'
     end
   end
-  text = text..'\n'..'There are '..i..' plugins help available.'
-  text = text..'\n'..'Write "!help [plugin name]" or "!help [plugin number]" for more info.'
-  text = text..'\n'..'Or "!help all" to show all info.'
+  text = text..'______________________________'
+  text = text..'\n'..'You can use < /helps > for view all items info or can use < /help (name) > for view a item info'
+  text = text..'\n'..'For see about Death Bot Team, send < /ver >'
+  text = text..'\n'..'Sudo: @arash_admin_death @fazel_admin_death Channel: @deathch'
   return text
 end
  
@@ -138,9 +137,9 @@ local function run(msg, matches)
   else
       requester = "user"
   end
-  if matches[1] == "!help" then
+  if matches[1] == "[!/]help" then
     return telegram_help()
-  elseif matches[1] == "!help all" then
+  elseif matches[1] == "[!/]helps" then
     return help_all(requester)
   else
     local text = ""
@@ -157,17 +156,16 @@ local function run(msg, matches)
 end
  
 return {
-  description = "Help plugin. Get info from other plugins.  ",
+  description = "Help For Command and Tools",
   usage = {
-    "!help: Show list of plugins.",
-    "!help all: Show all commands for every plugin.",
-    "!help [plugin name]: Commands for that plugin.",
-    "!help [number]: Commands for that plugin. Type !help to get the plugin number."
+    "/help : view items list",
+    "/helps : view all commands and info",
+    "/help (name) : view a item commands and info",
   },
   patterns = {
-    "^!help$",
-    "^!help all",
-    "^!help (.+)"
+    "^[!/]help$",
+    "^[!/]helps",
+    "^[!/]help (.+)"
   },
   run = run
 }
