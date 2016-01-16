@@ -18,14 +18,11 @@ local function returnids(cb_extra, success, result)
    local chat_id = result.id
    local chatname = result.print_name
 
-   local text = 'IDs for chat '..chatname
-      ..' ('..chat_id..')\n'
-      ..'There are '..result.members_num..' members'
-      ..'\n---------\n'
+   local text = 'Group: '..chatname..' ID: '..chat_id..' Member: '..result.members_num..'\n______________________________\n'
       i = 0
    for k,v in pairs(result.members) do
       i = i+1
-      text = text .. i .. ". " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.id .. ")\n"
+      text = text .. i .. "> " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.id .. ")\n"
    end
    send_large_msg(receiver, text)
 end
@@ -33,11 +30,11 @@ end
 local function username_id(cb_extra, success, result)
    local receiver = cb_extra.receiver
    local qusername = cb_extra.qusername
-   local text = 'User '..qusername..' not found in this group!'
+   local text = 'No '..qusername..' in group'
    for k,v in pairs(result.members) do
       vusername = v.username
       if vusername == qusername then
-      	text = 'ID for username\n'..vusername..' : '..v.id
+      	text = 'Username: @'..vusername..'\nID Number: '..v.id
       end
    end
    send_large_msg(receiver, text)
@@ -46,26 +43,23 @@ end
 local function run(msg, matches)
    local receiver = get_receiver(msg)
    if matches[1] == "!id" then
-      local text = 'Name : '.. string.gsub(user_print_name(msg.from),'_', ' ') .. '\nID : ' .. msg.from.id
-      if is_chat_msg(msg) then
-         text = text .. "\n\nYou are in group " .. string.gsub(user_print_name(msg.to), '_', ' ') .. " (ID: " .. msg.to.id  .. ")"
-      end
+      local text = 'Your Name: '.. string.gsub(user_print_name(msg.from),'_', ' ') .. '\nYour ID: ' .. msg.from.id
       return text
-   elseif matches[1] == "chat" then
+   elseif matches[1] == "gp" then
       -- !ids? (chat) (%d+)
       if matches[2] and is_sudo(msg) then
          local chat = 'chat#id'..matches[2]
          chat_info(chat, returnids, {receiver=receiver})
       else
          if not is_chat_msg(msg) then
-            return "You are not in a group."
+            return "Only work in group"
          end
          local chat = get_receiver(msg)
          chat_info(chat, returnids, {receiver=receiver})
       end
    else
    	if not is_chat_msg(msg) then
-   		return "Only works in group"
+   		return "Only work in group"
    	end
    	local qusername = string.gsub(matches[1], "@", "")
    	local chat = get_receiver(msg)
@@ -73,19 +67,33 @@ local function run(msg, matches)
    end
 end
 
+local function run(msg, matches)
+   local receiver = get_receiver(msg)
+   if matches[1] == "!gp" then
+      if is_chat_msg(msg) then
+         text = "Group Name: " .. string.gsub(user_print_name(msg.to), '_', ' ') .. "\nGroup ID: " .. msg.to.id
+	  else
+	     text = "Only work in group"
+      end
+      return text
+   end
+end
+
 return {
-   description = "Know your id or the id of a chat members.",
+   description = "User ID Number and Group ID Number Info",
    usage = {
-      "!id: Return your ID and the chat id if you are in one.",
-      "!ids chat: Return the IDs of the current chat members.",
-      "!ids chat <chat_id>: Return the IDs of the <chat_id> members.",
-      "!id <username> : Return the id from username given."
+      "/gp : group name and id",
+      "/id : your user and id",
+      "/ids gp : all members info in group",
+      "/ids gp (id) : members info for other group",
+      "/id (@user) : user info"
    },
    patterns = {
-      "^!id$",
-      "^!ids? (chat) (%d+)$",
-      "^!ids? (chat)$",
-      "^!id (.*)$"
+      "^[!/]id$",
+      "^[!/]ids? (gp) (%d+)$",
+      "^[!/]ids? (gp)$",
+      "^[!/]id (.*)$",
+	  "^[!/]gp$",
    },
    run = run
 }
