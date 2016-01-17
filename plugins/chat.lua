@@ -57,7 +57,7 @@ return {
 		"^[Hh]ello$",
 		"^[Aa]rash$",
 		"^ارش$",
-		"^[Dd]eath$",
+		"^مرگ$",
 		"^[Dd]eath$",
 		"^[Bb]ye$",
 		"^?$",
