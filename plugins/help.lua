@@ -108,7 +108,7 @@ local function telegram_help()
   end
   text = text..'______________________________'
   text = text..'\n'..'You can use < /helps > for view all items info or can use < /help (name) > for view a item info'
-  text = text..'\n'..'For see about Death Bot Team, send < /ver >'
+  text = text..'\n'..'For see about Death Bot , send < !version >'
   text = text..'\n'..'Sudo: @arash_admin_death @fazel_admin_death Channel: @deathch'
   return text
 end
